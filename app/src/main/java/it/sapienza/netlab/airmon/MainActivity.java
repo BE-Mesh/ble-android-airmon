@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +32,7 @@ import com.google.android.gms.tasks.Task;
 
 import it.sapienza.netlab.airmon.common.Utility;
 import it.sapienza.netlab.airmon.listeners.CustomScanCallback;
+import it.sapienza.netlab.airmon.client.BLEClient;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isScanning;
     private CustomScanCallback mScanCallback;
     private TextView debugger;
-
+    private BLEClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,41 +65,24 @@ public class MainActivity extends AppCompatActivity {
         cleanDebug();
         checkBluetoothAvailability();
         askPermissions(savedInstanceState);
+        this.client= BLEClient.getInstance(this.getApplicationContext());
     }
 
     private void sendMessage() {
-        // TODO: 04/03/2021 presa timesdtamp dati e GPS e invio
+        if (this.client.IsDeviceConnected()) this.client.sendMessage("ciao", "ciao2", "ciao3");
+        else Toast.makeText(this, "Non sono ancora inizializzato", Toast.LENGTH_LONG).show();
     }
 
 
     private void startScan() {
-        if (mScanCallback == null) {
-
-            new Handler().postDelayed(this::stopScan, SCAN_PERIOD);
-
-            // Kick off a new scan.
-            mScanCallback = new CustomScanCallback();
-
-
-            mBluetoothLeScanner = mBluetoothAdapter.getBluetoothLeScanner();
-
-            isScanning = true;
-            mBluetoothLeScanner.startScan(Utility.buildScanFilters(), Utility.buildScanSettings(), mScanCallback);
-
-        } else {
-            writeDebug("startScanning: Scanning already started ");
-        }
+        this.client.addOnClientOnlineListener(()->{
+            Toast.makeText(this, "Ho trovato Server", Toast.LENGTH_LONG).show();
+        });
+        this.client.startClient();
     }
 
     private void stopScan() {
-        mBluetoothLeScanner.stopScan(mScanCallback);
-
-        for (ScanResult scanResult : mScanCallback.getResults()) {
-            Log.d(TAG, "scan result" + scanResult.toString());
-        }
-
-        mScanCallback = null;
-        isScanning = false;
+        this.client.stopClient();
     }
 
 

@@ -1,13 +1,16 @@
 package it.sapienza.netlab.airmon;
 
 import android.app.Application;
+import android.util.Log;
 
 public class AppGlobal extends Application {
-
-    public static final boolean DEBUG_ON = true;
+    private final static String TAG = AppGlobal.class.getSimpleName();
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.i(TAG, "Application Started");
     }
 }
+
+
