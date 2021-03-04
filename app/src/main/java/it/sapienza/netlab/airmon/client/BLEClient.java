@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.util.LinkedList;
 
@@ -103,6 +104,7 @@ public class BLEClient {
     private void tryConnection() {
         if (isServiceStarted) {
             final int size = ServerList.getServerList().size();
+            try {
                 final Server newServer = ServerList.getServer(0);
                 Log.d(TAG, "OUD: " + "tryConnection with: " + newServer.getUserName());
                 final ConnectBLETask connectBLE = new ConnectBLETask(newServer, context);
@@ -110,7 +112,7 @@ public class BLEClient {
                 connectBLE.setOnConnectionLostListener(() -> {
                     OnConnectionListener.OnConnectionLost();
                 });
-                
+
 
                 connectBLE.startClient();
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -128,6 +130,10 @@ public class BLEClient {
                     }
                 }, HANDLER_PERIOD);
             }
+            catch (Exception e){
+                Toast.makeText(this.context, "No server found", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     public void startClient() {

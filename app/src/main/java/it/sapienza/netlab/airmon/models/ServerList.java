@@ -16,6 +16,8 @@ public class ServerList {
 
 
     public static Server getServer(int index) throws NoSuchElementException {
+        if (index >= servers.size())
+            throw new NoSuchElementException("Server non presente all'interno della lista");
         Server u = servers.get(index);
         if (u == null)
             throw new NoSuchElementException("Server non presente all'interno della lista");
