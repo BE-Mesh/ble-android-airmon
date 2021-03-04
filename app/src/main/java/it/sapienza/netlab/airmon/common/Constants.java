@@ -23,10 +23,21 @@ public class Constants {
     public static final ParcelUuid Service_UUID = ParcelUuid.fromString("00002019-0000-1000-8000-00805f9b34fb");
     public static final UUID ServiceUUID = UUID.fromString("00002019-0000-1000-8000-00805f9b34fb");
 
+
     public static final UUID CharacteristicUUID = UUID.fromString("1111b81d-0000-1000-8000-00805f9b34fb");
+    /*
     public static final UUID CharacteristicLatitudeUUID = UUID.fromString("1000b81d-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicLongitudeUUID = UUID.fromString("1100b81d-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicTimestampUUID = UUID.fromString("1110b81d-0000-1000-8000-00805f9b34fb");
+    */
+
+    //Queste sono le loro UUID
+
+    public static final UUID CharacteristicLatitudeUUID = UUID.fromString("00000000-0000-0000-0000-000000002AAE");
+    public static final UUID CharacteristicLongitudeUUID = UUID.fromString("00000000-0000-0000-0000-000000002AAF");
+    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00000000-0000-0000-0000-000000002A2B");
+    public static final UUID LocationServiceUUID = UUID.fromString("00000000-0000-0000-0000-000000001819");
+    public static final UUID TimeServiceUUID = UUID.fromString("00000000-0000-0000-0000-000000001805");
 
 
     public static final UUID CharacteristicNextServerIdUUID = UUID.fromString("1112b81d-0000-1000-8000-00805f9b34fb");
