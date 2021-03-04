@@ -8,49 +8,70 @@ import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResponse;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.Task;
 
 import it.sapienza.netlab.airmon.common.Utility;
 import it.sapienza.netlab.airmon.listeners.CustomScanCallback;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final int REQUEST_CHECK_SETTINGS = 0x1;
     public static final int REQUEST_ENABLE_BT = 322;
     private static final long SCAN_PERIOD = 5000;
     private static final int PERMISSION_REQUEST_COARSE_LOCATION = 456;
     private static final String TAG = MainActivity.class.getSimpleName();
+
     BluetoothManager mBluetoothManager;
     BluetoothAdapter mBluetoothAdapter;
     BluetoothLeScanner mBluetoothLeScanner;
-    private Button startScanButton;
+    private Button startScanButton, sendMessageButton;
     private boolean isMultipleAdvertisementSupported;
     private boolean isScanning;
     private CustomScanCallback mScanCallback;
+    private TextView debugger;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        debugger = findViewById(R.id.debugger);
+        startScanButton = findViewById(R.id.startService);
+        sendMessageButton = findViewById(R.id.sendMessage);
 
-        startScanButton = findViewById(R.id.button_start_scan);
         startScanButton.setOnClickListener(v -> startScan());
-
+        sendMessageButton.setOnClickListener(view -> sendMessage());
+        cleanDebug();
+        checkBluetoothAvailability();
         askPermissions(savedInstanceState);
+    }
+
+    private void sendMessage() {
+        // TODO: 04/03/2021 presa timesdtamp dati e GPS e invio
     }
 
 
     private void startScan() {
         if (mScanCallback == null) {
-
 
             new Handler().postDelayed(this::stopScan, SCAN_PERIOD);
 
@@ -64,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
             mBluetoothLeScanner.startScan(Utility.buildScanFilters(), Utility.buildScanSettings(), mScanCallback);
 
         } else {
-            Log.d(TAG, "OUD: startScanning: Scanning already started ");
+            writeDebug("startScanning: Scanning already started ");
         }
     }
 
@@ -137,11 +158,11 @@ public class MainActivity extends AppCompatActivity {
                 if (mBluetoothAdapter.isEnabled()) {
                     // Are Bluetooth Advertisements supported on this device?
                     if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
-                        Log.d(TAG, "Everything is supported and enabled");
+                        writeDebug("Everything is supported and enabled");
                         isMultipleAdvertisementSupported = true;
                     } else {
-                        Log.d(TAG, "Your device does not support multiple advertisement, you can be only client");
                         isMultipleAdvertisementSupported = false;
+                        writeDebug("Your device does not support multiple advertisement, you can be only client");
                     }
                 } else {
                     // Prompt user to turn on Bluetooth (logic continues in onActivityResult()).
@@ -158,7 +179,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_ENABLE_BT) {
+        if (requestCode == REQUEST_CHECK_SETTINGS) {
+
+            switch (resultCode) {
+                case Activity.RESULT_OK:
+                    writeDebug("GPS OK");
+                    break;
+                case Activity.RESULT_CANCELED:
+                    setGPSOn();
+                    break;
+            }
+
+        } else if (requestCode == REQUEST_ENABLE_BT) {
             switch (resultCode) {
                 case Activity.RESULT_OK:
                     checkBluetoothAvailability();
@@ -173,6 +205,85 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    /**
+     * Makes request to enable GPS
+     */
+    protected void setGPSOn() {
+        LocationRequest locationRequest = LocationRequest.create();
+        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        locationRequest.setInterval(30 * 1000);
+        locationRequest.setFastestInterval(5 * 1000);
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(locationRequest);
+        builder.setAlwaysShow(true);
+
+        Task<LocationSettingsResponse> task = LocationServices.getSettingsClient(this).checkLocationSettings(builder.build());
+        task.addOnCompleteListener(task1 -> {
+            try {
+                task1.getResult(ApiException.class);
+            } catch (ApiException exception) {
+                switch (exception.getStatusCode()) {
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied. But could be fixed by showing the
+                        // user a dialog.
+                        try {
+                            // Cast to a resolvable exception.
+                            ResolvableApiException resolvable = (ResolvableApiException) exception;
+                            // Show the dialog by calling startResolutionForResult(),
+                            // and check the result in onActivityResult().
+                            resolvable.startResolutionForResult(
+                                    MainActivity.this,
+                                    REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException | ClassCastException e) {
+                            // Ignore the error.
+                            writeErrorDebug("GPS: " + e.getMessage());
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        writeErrorDebug("Location settings are not satisfied. However, we have no way to fix the settings so we won't show the dialog.");
+                        break;
+                }
+            }
+        });
+    }
+
+    /**
+     * Clean the field debugger
+     */
+    private void cleanDebug() {
+        runOnUiThread(() -> debugger.setText(""));
+    }
+
+    /**
+     * Write a message debug into log and text debugger. The message will be logged into the debug logger.
+     *
+     * @param message message to be written
+     */
+    private void writeDebug(final String message) {
+        runOnUiThread(() -> {
+            if (debugger.getLineCount() == debugger.getMaxLines())
+                debugger.setText(String.format("%s\n", message));
+            else
+                debugger.setText(String.format("%s%s\n", String.valueOf(debugger.getText()), message));
+        });
+        Log.d(TAG, "OUD: " + message);
+    }
+
+    /**
+     * Write a message debug into log and text debugger. The message will be logged into the error logger.
+     *
+     * @param message message to be written
+     */
+    private void writeErrorDebug(final String message) {
+        runOnUiThread(() -> {
+            if (debugger.getLineCount() == debugger.getMaxLines())
+                debugger.setText(String.format("%s\n", message));
+            else
+                debugger.setText(String.format("%s%s\n", String.valueOf(debugger.getText()), message));
+        });
+        Log.e(TAG, message);
     }
 
 }
