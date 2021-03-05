@@ -5,13 +5,12 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -19,18 +18,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import it.sapienza.netlab.airmon.common.Utility;
 import it.sapienza.netlab.airmon.listeners.CustomScanCallback;
 import it.sapienza.netlab.airmon.client.BLEClient;
 
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
     private CustomScanCallback mScanCallback;
     private TextView debugger;
     private BLEClient client;
+    private FusedLocationProviderClient fusedLocationClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +67,10 @@ public class MainActivity extends AppCompatActivity {
         cleanDebug();
         checkBluetoothAvailability();
         askPermissions(savedInstanceState);
-        this.client= BLEClient.getInstance(this.getApplicationContext());
+        this.client = BLEClient.getInstance(this.getApplicationContext());
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
     }
 
     private void sendMessage() {
@@ -75,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void startScan() {
-        this.client.addOnClientOnlineListener(()->{
+        this.client.addOnClientOnlineListener(() -> {
             Toast.makeText(this, "Ho trovato Server", Toast.LENGTH_LONG).show();
         });
         this.client.startClient();
@@ -232,7 +237,28 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
+                    @Override
+                    public void onSuccess(Location location) {
+                        // Got last known location. In some rare situations this can be null.
+                        if (location != null) {
+                            // Logic to handle location object
+                        }
+                    }
+                });
     }
+
 
     /**
      * Clean the field debugger

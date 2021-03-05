@@ -1,5 +1,7 @@
 package it.sapienza.netlab.airmon.tasks;
 
+import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
@@ -8,21 +10,31 @@ import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
+import androidx.core.app.ActivityCompat;
 
+import java.nio.charset.Charset;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Calendar;
 import it.sapienza.netlab.airmon.common.Constants;
 import it.sapienza.netlab.airmon.common.RoutingTable;
 import it.sapienza.netlab.airmon.common.Utility;
 import it.sapienza.netlab.airmon.listeners.Listeners;
 import it.sapienza.netlab.airmon.models.Server;
 
+import static androidx.core.content.ContextCompat.getSystemService;
 import static it.sapienza.netlab.airmon.common.ByteUtility.getBit;
 import static it.sapienza.netlab.airmon.common.ByteUtility.printByte;
 
@@ -32,7 +44,6 @@ import static it.sapienza.netlab.airmon.common.ByteUtility.printByte;
  */
 public class ConnectBLETask {
     private final static String TAG = ConnectBLETask.class.getName();
-
     private Server server;
     private BluetoothGattCallback mGattCallback;
     private BluetoothGatt mGatt;
@@ -51,7 +62,7 @@ public class ConnectBLETask {
     private boolean jobDone = false;
     private Listeners.OnConnectionLost OnConnectionLostListener;
     private int maxAttempt;
-    private byte [] longitude = null, timestamp = null;
+    private byte[] longitude = null, timestamp = null;
     private boolean isConnected = false;
 
 
@@ -64,7 +75,7 @@ public class ConnectBLETask {
         this.messageMap = new HashMap<>();
         receivedListeners = new ArrayList<>();
         internetListeners = new ArrayList<>();
-        
+
         mGattCallback = new BluetoothGattCallback() {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
@@ -93,7 +104,7 @@ public class ConnectBLETask {
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
                     //Con questo if ho scritto la latitudine
-                    if (characteristic.getUuid().equals(Constants.CharacteristicLatitudeUUID)){
+                    if (characteristic.getUuid().equals(Constants.CharacteristicLatitudeUUID)) {
                         Log.d(TAG, "OUD: " + "I wrote a characteristic");
                         //Adesso riprendiamo il Service
                         BluetoothGattService service = gatt.getService(Constants.LocationServiceUUID);
@@ -109,8 +120,7 @@ public class ConnectBLETask {
                         charact.setValue(longitude);
                         gatt.writeCharacteristic(charact);
                         longitude = null;
-                    }
-                    else if (characteristic.getUuid().equals(Constants.CharacteristicLongitudeUUID)){
+                    } else if (characteristic.getUuid().equals(Constants.CharacteristicLongitudeUUID)) {
                         Log.d(TAG, "OUD: " + "I wrote a characteristic");
                         //Adesso riprendiamo il Service
                         BluetoothGattService service = gatt.getService(Constants.TimeServiceUUID);
@@ -123,18 +133,23 @@ public class ConnectBLETask {
                         if (charact == null) {
                             return;
                         }
+                        Date currentTime = Calendar.getInstance().getTime();
+                        DateFormat dateformat = new SimpleDateFormat("dd-mm-yyyy hh:mm:ss");
+                        timestamp = dateformat.format(currentTime).getBytes();
+
                         charact.setValue(timestamp);
                         gatt.writeCharacteristic(charact);
                         timestamp = null;
-                    }
-                    else {
+                    } else {
                         Log.d(TAG, "OUD: " + "I wrote all the characteristics");
                     }
                 }
                 super.onCharacteristicWrite(gatt, characteristic, status);
             }
-            
+
         };
+
+
     }
 
     public boolean IsDeviceConnected(){
