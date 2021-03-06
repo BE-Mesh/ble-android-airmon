@@ -18,9 +18,9 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="5dp"
                 android:background="#4b000000"
-                android:maxLines="10"
+                android:maxLines="30"
                 android:minHeight="100dp"
-                android:minLines="1"
+                android:minLines="15"
                 android:text="@string/logger" />
 
             <RelativeLayout

@@ -274,10 +274,11 @@ public class Utility {
 
         ScanFilter.Builder builder = new ScanFilter.Builder();
         // Comment out the below lines to see all BLE devices around you
-        builder.setServiceUuid(Constants.LocationServiceUUID);
+        builder.setServiceUuid(Constants.LocationServiceParcelUUID);
         scanFilters.add(builder.build());
-        builder.setServiceUuid(Constants.TimeServiceUUID);
-
+        builder.setServiceUuid(Constants.TimeServiceParcelUUID);
+        scanFilters.add(builder.build());
+        Log.d(TAG, "buildScanFilters: "+scanFilters);
         return scanFilters;
     }
 

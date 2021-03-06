@@ -67,6 +67,10 @@ public class ServerScanCallback extends ScanCallback {
         }
     }
 
+    public void clearResults() {
+        results.clear();
+    }
+
     public interface OnServerFoundMessageListener {
         void OnServerFound(String message);
 

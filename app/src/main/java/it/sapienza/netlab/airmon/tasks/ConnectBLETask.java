@@ -169,7 +169,7 @@ public class ConnectBLETask {
      */
     public void sendMessage(byte[] latitude, byte[] longitude, byte[] timestamp) {
 
-        BluetoothGattService service = null;// mGatt.getService(Constants.LocationServiceUUID);
+        BluetoothGattService service = mGatt.getService(Constants.LocationServiceUUID);
         if (service == null) {
             return;
         }
