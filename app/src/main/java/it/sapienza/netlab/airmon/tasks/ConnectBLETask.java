@@ -66,8 +66,6 @@ public class ConnectBLETask {
     private byte[] latitude = null, longitude = null, timestamp = null;
     private boolean isConnected = false;
 
-//    MainActivity c = new MainActivity();
-
     public ConnectBLETask(Server server, final Context context) {
         // GATT OBJECT TO CONNECT TO A GATT SERVER
         maxAttempt = 0;
@@ -88,7 +86,7 @@ public class ConnectBLETask {
                     Log.d(TAG, "OUD: onConnectionStateChange: discover services :" + res);
                 } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                     isConnected = false;
-                    Log.d(TAG, "OUD: " + "onConnectionStateChange: disco  ");
+                    Log.d(TAG, "OUD: " + "onConnectionStateChange: disco");
                 }
                 super.onConnectionStateChange(gatt, status, newState);
             }

@@ -4,36 +4,31 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.le.BluetoothLeScanner;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.ResolvableApiException;
-import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
-import it.sapienza.netlab.airmon.listeners.CustomScanCallback;
 import it.sapienza.netlab.airmon.client.BLEClient;
+
+import static it.sapienza.netlab.airmon.common.Utility.isBLESupported;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -45,11 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     BluetoothManager mBluetoothManager;
     BluetoothAdapter mBluetoothAdapter;
-    BluetoothLeScanner mBluetoothLeScanner;
     private Button startScanButton, sendMessageButton;
     private boolean isMultipleAdvertisementSupported;
-    private boolean isScanning;
-    private CustomScanCallback mScanCallback;
     private TextView debugger;
     private BLEClient client;
 //    private FusedLocationProviderClient fusedLocationClient;
@@ -64,26 +56,28 @@ public class MainActivity extends AppCompatActivity {
         startScanButton = findViewById(R.id.startService);
         sendMessageButton = findViewById(R.id.sendMessage);
 
-        startScanButton.setOnClickListener(v -> startScan());
+        startScanButton.setOnClickListener(v -> startService());
         sendMessageButton.setOnClickListener(view -> sendMessage());
         cleanDebug();
-        checkBluetoothAvailability();
         askPermissions(savedInstanceState);
         this.client = BLEClient.getInstance(this.getApplicationContext());
 
         //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
     }
 
     private void sendMessage() {
-        if (this.client.IsDeviceConnected()) this.client.sendMessage("ciao", "ciao2", "ciao3");
-        else Toast.makeText(this, "Non sono ancora inizializzato", Toast.LENGTH_LONG).show();
+        if (this.client.IsDeviceConnected()) {
+            this.client.sendMessage("ciao", "ciao2", "ciao3");
+        } else {
+            writeErrorDebug("Client not initialized");
+        }
     }
 
 
-    private void startScan() {
+    private void startService() {
+        writeDebug("Start service");
         this.client.addOnClientOnlineListener(() -> {
-            Toast.makeText(this, "Ho trovato Server", Toast.LENGTH_LONG).show();
+            writeDebug("New node found");
         });
         this.client.startClient();
     }
@@ -119,11 +113,11 @@ public class MainActivity extends AppCompatActivity {
 
                     checkBluetoothAvailability();
                 } else {
-                    Log.e(TAG, "onRequestPermissionsResult: Permission denied");
+                    writeErrorDebug("onRequestPermissionsResult: Permission denied");
                 }
                 break;
             default:
-                Log.e(TAG, "case not found");
+                writeErrorDebug("Case not found.");
         }
     }
 
@@ -147,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                 mBluetoothAdapter = mBluetoothManager.getAdapter();
 
                 // Is Bluetooth turned on?
-                if (mBluetoothAdapter.isEnabled()) {
+                if (mBluetoothAdapter.isEnabled() && isBLESupported(this)) {
                     // Are Bluetooth Advertisements supported on this device?
                     if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
                         writeDebug("Everything is supported and enabled");
@@ -163,10 +157,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             } else {
                 // Bluetooth is not supported.
-                Log.e(TAG, "Bluetooth is not supported");
+                writeErrorDebug("Bluetooth is not supported");
             }
         }
     }
+
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -178,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
                     writeDebug("GPS OK");
                     break;
                 case Activity.RESULT_CANCELED:
+                    writeErrorDebug("GPS request was cancelled.");
                     setGPSOn();
                     break;
             }
@@ -248,7 +244,7 @@ public class MainActivity extends AppCompatActivity {
 //            // to handle the case where the user grants the permission. See the documentation
 //            // for ActivityCompat#requestPermissions for more details.
 //            return;
-        }
+    }
 //        fusedLocationClient.getLastLocation()
 //                .addOnSuccessListener(this, new OnSuccessListener<Location>() {
 //                    @Override
@@ -286,9 +282,9 @@ public class MainActivity extends AppCompatActivity {
             if (debugger.getLineCount() == debugger.getMaxLines())
                 debugger.setText(String.format("%s\n", message));
             else
-                debugger.setText(String.format("%s%s\n", String.valueOf(debugger.getText()), message));
+                debugger.setText(String.format("%s%s\n", debugger.getText(), message));
         });
-        Log.d(TAG, "OUD: " + message);
+        Log.d(TAG, message);
     }
 
     /**
@@ -301,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
             if (debugger.getLineCount() == debugger.getMaxLines())
                 debugger.setText(String.format("%s\n", message));
             else
-                debugger.setText(String.format("%s%s\n", String.valueOf(debugger.getText()), message));
+                debugger.setText(String.format("%s%s\n", debugger.getText(), message));
         });
         Log.e(TAG, message);
     }

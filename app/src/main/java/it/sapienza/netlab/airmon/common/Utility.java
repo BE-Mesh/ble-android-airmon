@@ -16,7 +16,6 @@ import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
@@ -47,7 +46,7 @@ import static it.sapienza.netlab.airmon.common.ByteUtility.setBit;
 
 public class Utility {
     // Stops scanning after 5 seconds.
-    public static final long SCAN_PERIOD = 5000;
+    public static final long SCAN_PERIOD = 10000;
 
     public final static String BETA_FILENAME_SENT = "sent_messages.txt";
     public final static String BETA_FILENAME_RECEIVED = "received_messages.txt";
@@ -285,7 +284,7 @@ public class Utility {
     public static ScanSettings buildScanSettings() {
         ScanSettings.Builder builder = new ScanSettings.Builder();
         builder.setScanMode(ScanSettings.SCAN_MODE_LOW_POWER);
-        //builder.setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE); // uncomment will work better but wil an high energy consumption
+//        builder.setMatchMode(ScanSettings.MATCH_MODE_AGGRESSIVE); // uncomment will work better but wil an high energy consumption
         return builder.build();
     }
 

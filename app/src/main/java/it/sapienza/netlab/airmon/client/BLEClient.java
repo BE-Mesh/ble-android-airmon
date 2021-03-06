@@ -19,7 +19,6 @@ import it.sapienza.netlab.airmon.models.Server;
 import it.sapienza.netlab.airmon.models.ServerList;
 import it.sapienza.netlab.airmon.tasks.ConnectBLETask;
 
-import static it.sapienza.netlab.airmon.common.ByteUtility.printByte;
 import static it.sapienza.netlab.airmon.common.Utility.SCAN_PERIOD;
 
 /**
@@ -33,12 +32,12 @@ public class BLEClient {
     private static BLEClient singleton;
     private Context context;
     private ConnectBLETask connectBLETask;
-    private BluetoothLeScanner mBluetoothLeScanner;
+    private final BluetoothLeScanner mBluetoothLeScanner;
     private ServerScanCallback mScanCallback;
     private boolean isScanning = false;
     private BluetoothDevice serverDevice;
     private boolean isServiceStarted = false;
-    private LinkedList<OnClientOnlineListener> listeners;
+    private final LinkedList<OnClientOnlineListener> listeners;
     private byte[] lastServerIdFound = new byte[2];
     private Listeners.OnConnectionLost OnConnectionListener;
 
@@ -64,41 +63,42 @@ public class BLEClient {
     public void addOnClientOnlineListener(OnClientOnlineListener list) {
         this.listeners.add(list);
     }
-    private void startScanning() {
+
+    private void startScan() {
         isScanning = true;
         if (mScanCallback == null) {
             ServerList.cleanUserList();
             // Will stop the scanning after a set time.
-            new Handler().postDelayed(this::initializeClient, SCAN_PERIOD);
+            new Handler().postDelayed(this::stopScan, SCAN_PERIOD);
 
             // Kick off a new scan.
             mScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundListener() {
                 @Override
                 public void OnServerFound(String message) {
-                    Log.d(TAG, "OUD: OnServerFound: " + message);
+                    Log.d(TAG, "OnServerFound: " + message);
                 }
 
                 @Override
                 public void OnErrorScan(String message, int errorCodeCallback) {
-                    Log.e(TAG, "OUD: OnServerFound: " + message);
+                    Log.e(TAG, "OnServerFound: " + message);
                 }
             });
 
             mBluetoothLeScanner.startScan(Utility.buildScanFilters(), Utility.buildScanSettings(), mScanCallback);
 
         } else {
-            Log.d(TAG, "OUD: startScanning: Scanning already started ");
+            Log.d(TAG, "startScanning: Scanning already started ");
         }
     }
 
-    private void initializeClient() {
-        Log.d(TAG, "OUD: Stopping Scanning");
+    private void stopScan() {
+        Log.d(TAG, "Stopping Scanning");
         // Stop the scan, wipe the callback.
         mBluetoothLeScanner.stopScan(mScanCallback);
         mScanCallback = null;
         isScanning = false;
-        //Questa serve perché potrebbe esserci un ritardo per queste operazioni
-        new Handler(Looper.getMainLooper()).postDelayed(() -> tryConnection(), 1000);
+        // Questa serve perché potrebbe esserci un ritardo per queste operazioni
+        new Handler(Looper.getMainLooper()).postDelayed(this::tryConnection, 1000);
     }
 
     private void tryConnection() {
@@ -106,31 +106,29 @@ public class BLEClient {
             final int size = ServerList.getServerList().size();
             try {
                 final Server newServer = ServerList.getServer(0);
-                Log.d(TAG, "OUD: " + "tryConnection with: " + newServer.getUserName());
+                Log.d(TAG, "tryConnection with: " + newServer.getUserName());
                 final ConnectBLETask connectBLE = new ConnectBLETask(newServer, context);
                 //connectBLE.addReceivedListener((idMitt, message, hop, sendTimeStamp) -> Log.d(TAG, "OnMessageReceived: Messaggio ricevuto dall'utente " + idMitt + ": " + message));
                 connectBLE.setOnConnectionLostListener(() -> {
                     OnConnectionListener.OnConnectionLost();
                 });
 
-
                 connectBLE.startClient();
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    if (connectBLE.IsDeviceConnected()){
+                    if (connectBLE.IsDeviceConnected()) {
                         connectBLETask = connectBLE;
                         for (OnClientOnlineListener l : listeners) {
                             l.onClientOnline();
                         }
                         serverDevice = newServer.getBluetoothDevice();
-                        Log.d(TAG, "OUD: You're a client ");
+                        Log.d(TAG, "You're a client ");
                     } else {
                         connectBLE.setJobDone();
-                        Log.d(TAG, "OUD: " + "id non assegnato, passo al prossimo server");
+                        Log.d(TAG, "id non assegnato, passo al prossimo server");
                         //tryConnection(offset + 1);
                     }
                 }, HANDLER_PERIOD);
-            }
-            catch (Exception e){
+            } catch (Exception e) {
                 Toast.makeText(this.context, "No server found", Toast.LENGTH_LONG).show();
             }
         }
@@ -138,8 +136,8 @@ public class BLEClient {
 
     public void startClient() {
         isServiceStarted = true;
-        Log.d(TAG, "OUD: startClient: Scan the background, search servers to join");
-        startScanning();
+        Log.d(TAG, "startClient: Scan the background, search servers to join");
+        startScan();
     }
 
 
@@ -150,15 +148,14 @@ public class BLEClient {
         }
         isServiceStarted = false;
 
-        Log.d(TAG, "OUD: stopClient: Service stopped");
+        Log.d(TAG, "stopClient: Service stopped");
         if (isScanning) {
-            Log.d(TAG, "OUD: stopClient: Stopping Scanning");
+            Log.d(TAG, "stopClient: Stopping Scanning");
             // Stop the scan, wipe the callback.
             mBluetoothLeScanner.stopScan(mScanCallback);
             mScanCallback = null;
             isScanning = false;
         }
-
     }
 
 
