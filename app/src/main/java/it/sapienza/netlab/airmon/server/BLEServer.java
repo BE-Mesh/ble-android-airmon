@@ -211,7 +211,7 @@ public class BLEServer {
             new Handler().postDelayed(() -> initializeServer(), SCAN_PERIOD);
 
             // Kick off a new scan.
-            mScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundListener() {
+            mScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundMessageListener() {
                 @Override
                 public void OnServerFound(String message) {
                     debugMessageListener.OnDebugMessage("OnServerFound: " + message);

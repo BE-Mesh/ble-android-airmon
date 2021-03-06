@@ -110,7 +110,8 @@ public class ConnectBLETask {
 
                         Log.d(TAG, "OUD: " + "I wrote a characteristic");
                         //Adesso riprendiamo il Service
-                        BluetoothGattService service = gatt.getService(Constants.LocationServiceUUID);
+                        // TODO: 06/03/2021 = null put just to make it work, to be controlled
+                        BluetoothGattService service =null; //gatt.getService(Constants.LocationServiceUUID);
                         if (service == null) {
                             return;
                         }
@@ -127,7 +128,7 @@ public class ConnectBLETask {
                     } else if (characteristic.getUuid().equals(Constants.CharacteristicLongitudeUUID)) {
                         Log.d(TAG, "OUD: " + "I wrote a characteristic");
                         //Adesso riprendiamo il Service
-                        BluetoothGattService service = gatt.getService(Constants.TimeServiceUUID);
+                        BluetoothGattService service =null; //gatt.getService(Constants.TimeServiceUUID);
                         if (service == null) {
                             return;
                         }
@@ -168,7 +169,7 @@ public class ConnectBLETask {
      */
     public void sendMessage(byte[] latitude, byte[] longitude, byte[] timestamp) {
 
-        BluetoothGattService service = mGatt.getService(Constants.LocationServiceUUID);
+        BluetoothGattService service = null;// mGatt.getService(Constants.LocationServiceUUID);
         if (service == null) {
             return;
         }

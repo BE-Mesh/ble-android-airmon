@@ -72,7 +72,7 @@ public class BLEClient {
             new Handler().postDelayed(this::stopScan, SCAN_PERIOD);
 
             // Kick off a new scan.
-            mScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundListener() {
+            mScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundMessageListener() {
                 @Override
                 public void OnServerFound(String message) {
                     Log.d(TAG, "OnServerFound: " + message);

@@ -36,8 +36,8 @@ public class Constants {
     public static final UUID CharacteristicLatitudeUUID = UUID.fromString("00000000-0000-0000-0000-000000002AAE");
     public static final UUID CharacteristicLongitudeUUID = UUID.fromString("00000000-0000-0000-0000-000000002AAF");
     public static final UUID CharacteristicTimestampUUID = UUID.fromString("00000000-0000-0000-0000-000000002A08");
-    public static final UUID LocationServiceUUID = UUID.fromString("00000000-0000-0000-0000-000000001819");
-    public static final UUID TimeServiceUUID = UUID.fromString("00000000-0000-0000-0000-000000001806");
+    public static final ParcelUuid LocationServiceUUID = ParcelUuid.fromString("00000000-0000-0000-0000-000000001819");
+    public static final ParcelUuid TimeServiceUUID = ParcelUuid.fromString("00000000-0000-0000-0000-000000001806");
 
 
     public static final UUID CharacteristicNextServerIdUUID = UUID.fromString("1112b81d-0000-1000-8000-00805f9b34fb");
@@ -63,7 +63,6 @@ public class Constants {
 
     /**
      * periodo minimo e max di attesa in secondi
-     *
      */
     public static final int SCAN_PERIOD_MIN = 2;
     public static final int SCAN_PERIOD_MAX = 8;

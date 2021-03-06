@@ -4,11 +4,14 @@ import android.Manifest;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothManager;
+import android.bluetooth.le.BluetoothLeScanner;
+import android.bluetooth.le.ScanResult;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,7 +29,9 @@ import com.google.android.gms.location.LocationSettingsResponse;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.tasks.Task;
 
-import it.sapienza.netlab.airmon.client.BLEClient;
+import java.util.Arrays;
+
+import it.sapienza.netlab.airmon.listeners.ServerScanCallback;
 
 import static it.sapienza.netlab.airmon.common.Utility.isBLESupported;
 
@@ -35,15 +40,17 @@ public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_CHECK_SETTINGS = 0x1;
     public static final int REQUEST_ENABLE_BT = 322;
     private static final long SCAN_PERIOD = 5000;
-    private static final int PERMISSION_REQUEST_COARSE_LOCATION = 456;
+    private static final int PERMISSION_REQUEST_FINE_LOCATION = 456;
     private static final String TAG = MainActivity.class.getSimpleName();
 
     BluetoothManager mBluetoothManager;
     BluetoothAdapter mBluetoothAdapter;
+    BluetoothLeScanner bluetoothLeScanner;
     private Button startScanButton, sendMessageButton;
     private boolean isMultipleAdvertisementSupported;
+    private boolean mScanning = false;
     private TextView debugger;
-    private BLEClient client;
+//    private BLEClient client;
 //    private FusedLocationProviderClient fusedLocationClient;
 //    private String latitude;
 //    private String longitude;
@@ -60,38 +67,74 @@ public class MainActivity extends AppCompatActivity {
         sendMessageButton.setOnClickListener(view -> sendMessage());
         cleanDebug();
         askPermissions(savedInstanceState);
-        this.client = BLEClient.getInstance(this.getApplicationContext());
+//        this.client = BLEClient.getInstance(this.getApplicationContext());
+
+        bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
 
         //fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
     private void sendMessage() {
-        if (this.client.IsDeviceConnected()) {
-            this.client.sendMessage("ciao", "ciao2", "ciao3");
-        } else {
-            writeErrorDebug("Client not initialized");
-        }
+//        if (this.client.IsDeviceConnected()) {
+//            this.client.sendMessage("ciao", "ciao2", "ciao3");
+//        } else {
+//            writeErrorDebug("Client not initialized");
+//        }
     }
 
 
     private void startService() {
-        writeDebug("Start service");
-        this.client.addOnClientOnlineListener(() -> {
-            writeDebug("New node found");
+        writeDebug("Start scan");
+//        this.client.addOnClientOnlineListener(() -> {
+//            writeDebug("New node found");
+//        });
+//        this.client.startClient();
+        ServerScanCallback cb = new ServerScanCallback(new ServerScanCallback.OnServerFoundMessageListener() {
+            @Override
+            public void OnServerFound(String message) {
+                writeDebug(message);
+            }
+
+            @Override
+            public void OnErrorScan(String message, int errorCodeCallback) {
+                writeErrorDebug(message);
+            }
         });
-        this.client.startClient();
+
+        if (!mScanning) {
+            // Stops scanning after a pre-defined scan period.
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mScanning = false;
+                    bluetoothLeScanner.stopScan(cb);
+                    writeDebug("Scan Stop");
+                    for (ScanResult result : cb.getResults()) {
+                        writeDebug(result.getDevice().getAddress());
+                    }
+                }
+            }, SCAN_PERIOD);
+
+            mScanning = true;
+//            bluetoothLeScanner.startScan(Utility.buildScanFilters(), Utility.buildScanSettings(), cb);
+            bluetoothLeScanner.startScan(cb);
+        } else {
+            mScanning = false;
+            bluetoothLeScanner.stopScan(cb);
+        }
+
     }
 
     private void stopScan() {
-        this.client.stopClient();
+//        this.client.stopClient();
     }
 
 
     private void askPermissions(Bundle savedInstanceState) {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             checkBluetoothAvailability(savedInstanceState);
         } else {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, PERMISSION_REQUEST_COARSE_LOCATION);
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
         }
     }
 
@@ -107,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case PERMISSION_REQUEST_COARSE_LOCATION:
+            case PERMISSION_REQUEST_FINE_LOCATION:
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
