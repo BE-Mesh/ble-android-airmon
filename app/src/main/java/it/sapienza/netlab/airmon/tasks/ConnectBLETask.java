@@ -33,6 +33,7 @@ import it.sapienza.netlab.airmon.common.RoutingTable;
 import it.sapienza.netlab.airmon.common.Utility;
 import it.sapienza.netlab.airmon.listeners.Listeners;
 import it.sapienza.netlab.airmon.models.Server;
+import it.sapienza.netlab.airmon.MainActivity;
 
 import static androidx.core.content.ContextCompat.getSystemService;
 import static it.sapienza.netlab.airmon.common.ByteUtility.getBit;
@@ -62,9 +63,10 @@ public class ConnectBLETask {
     private boolean jobDone = false;
     private Listeners.OnConnectionLost OnConnectionLostListener;
     private int maxAttempt;
-    private byte[] longitude = null, timestamp = null;
+    private byte[] latitude = null, longitude = null, timestamp = null;
     private boolean isConnected = false;
 
+//    MainActivity c = new MainActivity();
 
     public ConnectBLETask(Server server, final Context context) {
         // GATT OBJECT TO CONNECT TO A GATT SERVER
@@ -103,8 +105,11 @@ public class ConnectBLETask {
             @Override
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
+
                     //Con questo if ho scritto la latitudine
+
                     if (characteristic.getUuid().equals(Constants.CharacteristicLatitudeUUID)) {
+
                         Log.d(TAG, "OUD: " + "I wrote a characteristic");
                         //Adesso riprendiamo il Service
                         BluetoothGattService service = gatt.getService(Constants.LocationServiceUUID);
@@ -117,6 +122,7 @@ public class ConnectBLETask {
                         if (charact == null) {
                             return;
                         }
+//                        longitude = c.catchLongitude().getBytes();
                         charact.setValue(longitude);
                         gatt.writeCharacteristic(charact);
                         longitude = null;
