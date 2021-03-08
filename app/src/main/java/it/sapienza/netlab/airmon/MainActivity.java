@@ -47,6 +47,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import it.sapienza.netlab.airmon.common.Constants;
 import it.sapienza.netlab.airmon.common.Utility;
@@ -192,9 +193,6 @@ public class MainActivity extends AppCompatActivity {
                 writeDebug(characteristic.getUuid().toString());
             }
 
-            BluetoothGattCharacteristic locationChar = locationService.getCharacteristic(Constants.CharacteristicLocationUUID);
-            mGatt.setCharacteristicNotification(locationChar, true);
-
             BluetoothGattCharacteristic latitudeCharacteristic = locationService.getCharacteristic(Constants.CharacteristicLatitudeUUID);
             if (latitudeCharacteristic == null) {
                 writeErrorDebug("Latitude Characteristic is null, try again");
@@ -203,7 +201,11 @@ public class MainActivity extends AppCompatActivity {
             writeDebug("Writing on Latitude Characteristic");
             latitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLatitude()));
             mGatt.writeCharacteristic(latitudeCharacteristic);      //We wrote the latitude value on latitude characteristic
-
+            try{
+            TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e){
+                System.out.print("Delay");
+            }
             BluetoothGattCharacteristic longitudeCharacteristic = locationService.getCharacteristic(Constants.CharacteristicLongitudeUUID);
             if (longitudeCharacteristic == null) {
                 writeErrorDebug("Longitude Characteristic is null, try again");
@@ -212,6 +214,14 @@ public class MainActivity extends AppCompatActivity {
             writeDebug("Writing on Longitude Characteristic");
             longitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLongitude()));
             mGatt.writeCharacteristic(longitudeCharacteristic);     //We wrote the longitude value on longitude characteristic
+            try{
+                TimeUnit.SECONDS.sleep(1);
+            } catch (InterruptedException e){
+                System.out.print("Delay");
+            }
+
+            BluetoothGattCharacteristic locationChar = locationService.getCharacteristic(Constants.CharacteristicLocationUUID);
+            mGatt.setCharacteristicNotification(locationChar, true);
 
             writeDebug("Getting Time service");
             BluetoothGattService timeService = mGatt.getService(Constants.TimeServiceUUID);
@@ -390,7 +400,7 @@ public class MainActivity extends AppCompatActivity {
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
                 mCurrentLocation = locationResult.getLastLocation();
-                DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss", Locale.ITALY);
+                DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss", Locale.ITALY);
                 mTimestamp = dateformat.format(new Date());
             }
         };
