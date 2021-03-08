@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Airmon</string>
     <string name="start_client">Start Client</string>
-    <string name="start_service">Start Service</string>
+    <string name="start_service">Start Scan</string>
     <string name="logger">Logger</string>
-    <string name="send_message">Send Message</string>
+    <string name="send_message">Connect</string>
 </resources>

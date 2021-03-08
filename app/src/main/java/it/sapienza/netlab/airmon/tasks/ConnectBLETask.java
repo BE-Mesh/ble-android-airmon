@@ -61,7 +61,7 @@ public class ConnectBLETask {
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 Log.d(TAG, "GATT: " + gatt.toString());
-                Log.d(TAG, "I discovered a service");
+                Log.d(TAG, "Service discovered");
 
                 super.onServicesDiscovered(gatt, status);
             }
@@ -72,7 +72,7 @@ public class ConnectBLETask {
 
                     if (characteristic.getUuid().equals(Constants.CharacteristicLatitudeUUID)) {
 
-                        Log.d(TAG, "I wrote a characteristic");
+                        Log.d(TAG, "Latitude characteristic value has been written");
                         BluetoothGattService service = gatt.getService(Constants.LocationServiceUUID);
                         if (service == null) {
                             return;
@@ -86,7 +86,7 @@ public class ConnectBLETask {
                         gatt.writeCharacteristic(charact);
                         longitude = null;
                     } else if (characteristic.getUuid().equals(Constants.CharacteristicLongitudeUUID)){
-                        Log.d(TAG, "I wrote a characteristic");
+                        Log.d(TAG, "Longitude characteristic value has been written");
                         BluetoothGattService service = gatt.getService(Constants.TimeServiceUUID);
                         if (service == null) {
                             return;
@@ -104,7 +104,7 @@ public class ConnectBLETask {
                         gatt.writeCharacteristic(charact);
                         timestamp = null;
                     } else {
-                        Log.d(TAG, "I wrote all the characteristics");
+                        Log.d(TAG, "All characteristics values has been written");
                     }
                 }
                 super.onCharacteristicWrite(gatt, characteristic, status);

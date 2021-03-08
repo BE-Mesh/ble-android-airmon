@@ -147,24 +147,29 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
-                writeDebug("I discovered a service");
+                writeDebug("Service discovered");
                 super.onServicesDiscovered(gatt, status);
             }
 
             @Override
             public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
                 if (status == BluetoothGatt.GATT_SUCCESS) {
-                    writeDebug("I wrote a characteristic");
+                    writeDebug("A characteristic value has been written");
                 } else {
-                    writeErrorDebug("Error in writing in characteristic");
+                    writeErrorDebug("Error in writing in the characteristic");
                 }
                 super.onCharacteristicWrite(gatt, characteristic, status);
             }
 
         };
-        writeDebug("Start update of the location");
+        writeDebug("Location update started");
         mRequestingLocationUpdates = true;
         startLocationUpdates();
+    }
+
+    @Override
+    public void onClick(View view) {
+        sendMessageButton.setText("Send Message");
     }
 
     private void sendMessage() {
@@ -193,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
                 writeErrorDebug("Latitude Characteristic is null, try again");
                 return;
             }
-            writeDebug("Writing on latitude characteristic");
+            writeDebug("Writing on Latitude Characteristic");
             latitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLatitude()));
             mGatt.writeCharacteristic(latitudeCharacteristic);      //We wrote the latitude value on latitude characteristic
 
@@ -202,11 +207,11 @@ public class MainActivity extends AppCompatActivity {
                 writeErrorDebug("Longitude Characteristic is null, try again");
                 return;
             }
-            writeDebug("Writing on longitude char");
+            writeDebug("Writing on Longitude Characteristic");
             longitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLongitude()));
             mGatt.writeCharacteristic(longitudeCharacteristic);     //We wrote the longitude value on longitude characteristic
 
-            writeDebug("Getting time service");
+            writeDebug("Getting Time service");
             BluetoothGattService timeService = mGatt.getService(Constants.TimeServiceUUID);
             if (timeService == null) {
                 writeErrorDebug("Time Service is null, try again");
@@ -223,16 +228,16 @@ public class MainActivity extends AppCompatActivity {
                 writeErrorDebug("Time Characteristic is null, try again");
                 return;
             }
-            writeDebug("Writing on time Characteristic");
+            writeDebug("Writing on Time Characteristic");
             timeCharacteristic.setValue(mTimestamp.getBytes());
             mGatt.writeCharacteristic(timeCharacteristic);          //We wrote the time value on time characteristic
 
-            writeDebug("I wrote all the characteristics");
+            writeDebug("All characteristics values has been written");
         }
     }
 
     private void startScan() {
-        writeDebug("Start scan");
+        writeDebug("Scan started");
         if (isConnected) {
             mGatt.disconnect();
             isConnected = false;
@@ -252,14 +257,14 @@ public class MainActivity extends AppCompatActivity {
     private void stopScan() {
         isScanning = false;
         bluetoothLeScanner.stopScan(serverScanCallback);
-        writeDebug("Scan Stop");
+        writeDebug("Scan stopped");
         for (ScanResult result : serverScanCallback.getResults()) {
             writeDebug("Address: " + result.getDevice().getAddress() + ", UUIDs Found " + result.getScanRecord().getServiceUuids());
         }
         if (serverScanCallback.getResults().size() == 0) {
-            writeDebug("No server founds, check the other device.");
+            writeDebug("No server found, check another device.");
         }
-        writeDebug("Scan operations completed.");
+        writeDebug("Scan operation completed.");
     }
 
     private void askPermissions(Bundle savedInstanceState) {
@@ -429,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
                                 break;
                             case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
                                 String errorMessage = "Location settings are inadequate, and cannot be " +
-                                        "fixed here. Fix in Settings.";
+                                        "fixed here. Fix it in Settings.";
                                 writeErrorDebug(errorMessage);
                                 mRequestingLocationUpdates = false;
                         }
