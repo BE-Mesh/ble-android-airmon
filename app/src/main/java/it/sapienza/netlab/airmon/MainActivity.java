@@ -186,11 +186,14 @@ public class MainActivity extends AppCompatActivity {
                 writeErrorDebug("Location Service is null, try again");
                 return;
             }
-            mGatt.setCharacteristicNotification(locationService.getCharacteristic(Constants.CharacteristicLocationUUID), true);
+
             writeDebug("Characteristics available on Location service");
             for (BluetoothGattCharacteristic characteristic : locationService.getCharacteristics()) {
                 writeDebug(characteristic.getUuid().toString());
             }
+
+            BluetoothGattCharacteristic locationChar = locationService.getCharacteristic(Constants.CharacteristicLocationUUID);
+            mGatt.setCharacteristicNotification(locationChar, true);
 
             BluetoothGattCharacteristic latitudeCharacteristic = locationService.getCharacteristic(Constants.CharacteristicLatitudeUUID);
             if (latitudeCharacteristic == null) {
