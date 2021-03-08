@@ -20,7 +20,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -181,14 +180,13 @@ public class MainActivity extends AppCompatActivity {
             for (BluetoothGattService service : mGatt.getServices()) {
                 writeDebug(service.getUuid().toString());
             }
-
             writeDebug("Getting location service");
             BluetoothGattService locationService = mGatt.getService(Constants.LocationServiceUUID);
             if (locationService == null) {
                 writeErrorDebug("Location Service is null, try again");
                 return;
             }
-
+            mGatt.setCharacteristicNotification(locationService.getCharacteristic(Constants.CharacteristicLocationUUID), true);
             writeDebug("Characteristics available on Location service");
             for (BluetoothGattCharacteristic characteristic : locationService.getCharacteristics()) {
                 writeDebug(characteristic.getUuid().toString());

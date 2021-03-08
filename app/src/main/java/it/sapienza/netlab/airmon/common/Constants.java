@@ -16,7 +16,7 @@ public class Constants {
      * {https://www.bluetooth.org/en-us/specification/assigned-numbers/service-discovery}
      */
 
-
+    public static final UUID CharacteristicLocationUUID = UUID.fromString("00002a67-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicLatitudeUUID = UUID.fromString("00002aae-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicLongitudeUUID = UUID.fromString("00002aaf-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a08-0000-1000-8000-00805f9b34fb");       //This is the TimeStampUUID for nRF Connection

@@ -112,6 +112,7 @@ public class ConnectBLETask {
         };
     }
 
+
     public boolean IsDeviceConnected(){
         return this.isConnected;
     }
