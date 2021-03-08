@@ -7,9 +7,8 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Custom ScanCallback object - Every result is an user on the mesh network
- */
+
+//Custom ScanCallback object
 public class ServerScanCallback extends ScanCallback {
 
     private final static String TAG = ServerScanCallback.class.getName();

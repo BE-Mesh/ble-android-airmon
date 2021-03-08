@@ -60,55 +60,25 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ENABLE_BT = 322;
     private static final long SCAN_PERIOD = 5000;
     private static final int PERMISSION_REQUEST_FINE_LOCATION = 456;
-    /**
-     * The desired interval for location updates. Inexact. Updates may be more or less frequent.
-     */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-
-    /**
-     * The fastest rate for active location updates. Exact. Updates will never be more frequent
-     * than this value.
-     */
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;  //This is the interval for Location updates.
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
+            UPDATE_INTERVAL_IN_MILLISECONDS / 2;                        //This is fastest rate for active location updates.
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private TextView debugger;
     private Button startScanButton;
     private Button sendMessageButton;
 
-    /**
-     * Provides access to the Fused Location Provider API.
-     */
-    private FusedLocationProviderClient mFusedLocationClient;
+    //The fused location provider is a location API that combines different signals to provide the location information.
+    private FusedLocationProviderClient mFusedLocationClient;           //Provides access to the Fused Location Provider API.
+    private SettingsClient mSettingsClient;                             //Provides access to the Location Settings API.
+    private LocationRequest mLocationRequest;                           //Stores parameters for requests to the FusedLocationProviderApi.
+    private LocationSettingsRequest mLocationSettingsRequest;           //Stores the types of location services the client is interested in using.
+                                                                        //Checks settings to determine if the device has optimal location settings.
 
-    /**
-     * Provides access to the Location Settings API.
-     */
-    private SettingsClient mSettingsClient;
-    /**
-     * Stores parameters for requests to the FusedLocationProviderApi.
-     */
-    private LocationRequest mLocationRequest;
-
-    /**
-     * Stores the types of location services the client is interested in using. Used for checking
-     * settings to determine if the device has optimal location settings.
-     */
-    private LocationSettingsRequest mLocationSettingsRequest;
-
-    /**
-     * Callback for Location events.
-     */
-    private LocationCallback mLocationCallback;
-
-    /**
-     * Represents a geographical location.
-     */
-    private Location mCurrentLocation;
-    private String mTimestamp;
-
+    private LocationCallback mLocationCallback;                         //Callback for Location events.
+    private Location mCurrentLocation;                                  //This represents a geographical location.
+    private String mTimestamp;                                          //This represents a current time.
 
     private BluetoothManager mBluetoothManager;
     private BluetoothAdapter mBluetoothAdapter;
@@ -136,17 +106,16 @@ public class MainActivity extends AppCompatActivity {
         cleanDebug();
         askPermissions(savedInstanceState);
 
-
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         mSettingsClient = LocationServices.getSettingsClient(this);
 
-        // Kick off the process of building the LocationCallback, LocationRequest, and
-        // LocationSettingsRequest objects.
+        // Now we kick off the process of building the LocationCallback, LocationRequest,
+        // and LocationSettingsRequest objects.
         createLocationCallback();
         createLocationRequest();
         buildLocationSettingsRequest();
 
-        // Start the scan
+        // Start the scan of devices.
         bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().getBluetoothLeScanner();
         serverScanCallback = new ServerScanCallback(new ServerScanCallback.OnServerFoundMessageListener() {
             @Override
@@ -176,7 +145,6 @@ public class MainActivity extends AppCompatActivity {
                 super.onConnectionStateChange(gatt, status, newState);
             }
 
-
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 writeDebug("I discovered a service");
@@ -201,10 +169,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendMessage() {
         if (!isConnected) {
-            // for now only to the first server, can be better in future
             mGatt = serverScanCallback.getResults().get(0).getDevice().connectGatt(this, false, mGattCallback);
         } else {
-
             writeDebug("Services available");
             for (BluetoothGattService service : mGatt.getServices()) {
                 writeDebug(service.getUuid().toString());
@@ -227,9 +193,9 @@ public class MainActivity extends AppCompatActivity {
                 writeErrorDebug("Latitude Characteristic is null, try again");
                 return;
             }
-            writeDebug("Writing on latitude char");
+            writeDebug("Writing on latitude characteristic");
             latitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLatitude()));
-            mGatt.writeCharacteristic(latitudeCharacteristic);
+            mGatt.writeCharacteristic(latitudeCharacteristic);      //We wrote the latitude value on latitude characteristic
 
             BluetoothGattCharacteristic longitudeCharacteristic = locationService.getCharacteristic(Constants.CharacteristicLongitudeUUID);
             if (longitudeCharacteristic == null) {
@@ -238,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
             }
             writeDebug("Writing on longitude char");
             longitudeCharacteristic.setValue(String.valueOf(mCurrentLocation.getLongitude()));
-            mGatt.writeCharacteristic(longitudeCharacteristic);
+            mGatt.writeCharacteristic(longitudeCharacteristic);     //We wrote the longitude value on longitude characteristic
 
             writeDebug("Getting time service");
             BluetoothGattService timeService = mGatt.getService(Constants.TimeServiceUUID);
@@ -252,20 +218,18 @@ public class MainActivity extends AppCompatActivity {
                 writeDebug(characteristic.getUuid().toString());
             }
 
-            // Ora riprendiamo la caratteristica, come abbiamo fatto prima, ma per il tempo
             BluetoothGattCharacteristic timeCharacteristic = timeService.getCharacteristic(Constants.CharacteristicTimestampUUID);
             if (timeCharacteristic == null) {
                 writeErrorDebug("Time Characteristic is null, try again");
                 return;
             }
-            writeDebug("writing on time char");
+            writeDebug("Writing on time Characteristic");
             timeCharacteristic.setValue(mTimestamp.getBytes());
-            mGatt.writeCharacteristic(timeCharacteristic);
+            mGatt.writeCharacteristic(timeCharacteristic);          //We wrote the time value on time characteristic
 
             writeDebug("I wrote all the characteristics");
         }
     }
-
 
     private void startScan() {
         writeDebug("Start scan");
@@ -279,12 +243,10 @@ public class MainActivity extends AppCompatActivity {
             serverScanCallback.clearResults();
             isScanning = true;
             bluetoothLeScanner.startScan(Utility.buildScanFilters(), Utility.buildScanSettings(), serverScanCallback);
-            // bluetoothLeScanner.startScan(serverScanCallback);
         } else {
             isScanning = false;
             bluetoothLeScanner.stopScan(serverScanCallback);
         }
-
     }
 
     private void stopScan() {
@@ -300,7 +262,6 @@ public class MainActivity extends AppCompatActivity {
         writeDebug("Scan operations completed.");
     }
 
-
     private void askPermissions(Bundle savedInstanceState) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             checkBluetoothAvailability(savedInstanceState);
@@ -309,17 +270,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Cattura la risposta asincrona di richiesta dei permessi e se è tutto ok passa a controllare il bluetooth
-     *
-     * @param requestCode  codice richiesta ( per coarse location = PERMISSION_REQUEST_COARSE_LOCATION )
-     * @param permissions  permessi richiesti. NB If request is cancelled, the result arrays are empty.
-     * @param grantResults int [] rappresentati gli esiti delle richieste
-     */
-
+    //Capture the asynchronous permission request response.
+    //After that, it is checked whether the bluetooth is turned on.
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);       //param:requestCode = This is the request code.
+                                                                                        //param:permissions = Permissions required. If request is cancelled, the result arrays are empty.
+                                                                                        //param:grantResults = Int [] which represent the results of requests.
         switch (requestCode) {
             case PERMISSION_REQUEST_FINE_LOCATION:
                 if (grantResults.length > 0
@@ -335,28 +292,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Controlla che il cellulare supporti l'app e il multiple advertisement. Maschera per onActivityResult e onRequestPermissionsResult
-     */
+    //We check that the mobile supports the app and multiple advertisement.
     private void checkBluetoothAvailability() {
         checkBluetoothAvailability(null);
     }
 
-
-    /**
-     * Controlla che il cellulare supporti l'app e il multiple advertisement.
-     *
-     * @param savedInstanceState se l'app era già attiva non devo reinizializzare tutto
-     */
+    //If the app is already active I don't have to initialize everything again.
     private void checkBluetoothAvailability(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
             mBluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             if (mBluetoothManager != null) {
                 mBluetoothAdapter = mBluetoothManager.getAdapter();
 
-                // Is Bluetooth turned on?
+                //Check if Bluetooth is turned on.
                 if (mBluetoothAdapter.isEnabled() && isBLESupported(this)) {
-                    // Are Bluetooth Advertisements supported on this device?
+                    // Check if Bluetooth Advertisements are supported on this device
                     if (mBluetoothAdapter.isMultipleAdvertisementSupported()) {
                         writeDebug("Everything is supported and enabled");
                         isMultipleAdvertisementSupported = true;
@@ -375,7 +325,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -414,44 +363,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Sets up the location request. Android has two location request settings:
-     * {@code ACCESS_COARSE_LOCATION} and {@code ACCESS_FINE_LOCATION}. These settings control
-     * the accuracy of the current location. This sample uses ACCESS_FINE_LOCATION, as defined in
-     * the AndroidManifest.xml.
-     * <p/>
-     * When the ACCESS_FINE_LOCATION setting is specified, combined with a fast update
-     * interval (5 seconds), the Fused Location Provider API returns location updates that are
-     * accurate to within a few feet.
-     * <p/>
-     * These settings are appropriate for mapping applications that show real-time location
-     * updates.
-     */
     private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
 
-        // Sets the desired interval for active location updates. This interval is
-        // inexact. You may not receive updates at all if no location sources are available, or
-        // you may receive them slower than requested. You may also receive updates faster than
-        // requested if other applications are requesting location at a faster interval.
+        // Sets the interval for active location updates (10 seconds).
+        // You may not receive updates at all if no location sources are available, or you may receive them slower/faster than requested.
         mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
 
-        // Sets the fastest rate for active location updates. This interval is exact, and your
-        // application will never receive updates faster than this value.
+        // Sets the fastest rate for active location updates.
         mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
-    /**
-     * Creates a callback for receiving location events.
-     */
+    //Creates a callback for receiving location events.
     private void createLocationCallback() {
         mLocationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult locationResult) {
                 super.onLocationResult(locationResult);
-//                writeDebug("New location found");
                 mCurrentLocation = locationResult.getLastLocation();
                 DateFormat dateformat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss", Locale.ITALY);
                 mTimestamp = dateformat.format(new Date());
@@ -459,21 +389,14 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
-    /**
-     * Uses a {@link com.google.android.gms.location.LocationSettingsRequest.Builder} to build
-     * a {@link com.google.android.gms.location.LocationSettingsRequest} that is used for checking
-     * if a device has the needed location settings.
-     */
     private void buildLocationSettingsRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
         builder.addLocationRequest(mLocationRequest);
         mLocationSettingsRequest = builder.build();
     }
 
-    /**
-     * Requests location updates from the FusedLocationApi. Note: we don't call this unless location
-     * runtime permission has been granted.
-     */
+
+    //Requests location updates from the FusedLocationApi.
     private void startLocationUpdates() {
         // Begin by checking if the device has the necessary location settings.
         mSettingsClient.checkLocationSettings(mLocationSettingsRequest)
@@ -485,7 +408,6 @@ public class MainActivity extends AppCompatActivity {
                         //noinspection MissingPermission
                         mFusedLocationClient.requestLocationUpdates(mLocationRequest,
                                 mLocationCallback, Looper.myLooper());
-
                     }
                 })
                 .addOnFailureListener(this, new OnFailureListener() {
@@ -515,18 +437,13 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Removes location updates from the FusedLocationApi.
-     */
+
+    //Removes location updates from the FusedLocationApi.
     private void stopLocationUpdates() {
         if (!mRequestingLocationUpdates) {
             Log.d(TAG, "stopLocationUpdates: updates never requested, no-op.");
             return;
         }
-
-        // It is a good practice to remove location requests when the activity is in a paused or
-        // stopped state. Doing so helps battery performance and is especially
-        // recommended in applications that request frequent location updates.
         mFusedLocationClient.removeLocationUpdates(mLocationCallback)
                 .addOnCompleteListener(this, new OnCompleteListener<Void>() {
                     @Override
@@ -536,18 +453,13 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    /**
-     * Clean the field debugger
-     */
+    //Clean the field debugger
     private void cleanDebug() {
         runOnUiThread(() -> debugger.setText(""));
     }
 
-    /**
-     * Write a message debug into log and text debugger. The message will be logged into the debug logger.
-     *
-     * @param message message to be written
-     */
+    //Write a message debug into log and text debugger.
+    //The message will be logged into the debug logger.
     private void writeDebug(final String message) {
         runOnUiThread(() -> {
             if (debugger.getLineCount() == debugger.getMaxLines())
@@ -558,11 +470,8 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, message);
     }
 
-    /**
-     * Write a message debug into log and text debugger. The message will be logged into the error logger.
-     *
-     * @param message message to be written
-     */
+    //Write a message debug into log and text debugger.
+    //The message will be logged into the error logger.
     private void writeErrorDebug(final String message) {
         runOnUiThread(() -> {
             if (debugger.getLineCount() == debugger.getMaxLines())
