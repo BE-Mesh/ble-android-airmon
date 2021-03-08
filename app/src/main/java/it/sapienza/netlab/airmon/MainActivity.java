@@ -20,6 +20,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -100,9 +101,14 @@ public class MainActivity extends AppCompatActivity {
         debugger = findViewById(R.id.debugger);
         startScanButton = findViewById(R.id.startService);
         sendMessageButton = findViewById(R.id.sendMessage);
-
-        startScanButton.setOnClickListener(v -> startScan());
-        sendMessageButton.setOnClickListener(view -> sendMessage());
+        startScanButton.setOnClickListener(v -> {
+            startScan();
+            sendMessageButton.setText("Connect");
+        });
+        sendMessageButton.setOnClickListener(v -> {
+            sendMessage();
+            sendMessageButton.setText("Send Message");
+        });
         cleanDebug();
         askPermissions(savedInstanceState);
 
@@ -165,11 +171,6 @@ public class MainActivity extends AppCompatActivity {
         writeDebug("Location update started");
         mRequestingLocationUpdates = true;
         startLocationUpdates();
-    }
-
-    @Override
-    public void onClick(View view) {
-        sendMessageButton.setText("Send Message");
     }
 
     private void sendMessage() {

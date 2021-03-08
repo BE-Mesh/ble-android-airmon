@@ -19,8 +19,8 @@ public class Constants {
 
     public static final UUID CharacteristicLatitudeUUID = UUID.fromString("00002aae-0000-1000-8000-00805f9b34fb");
     public static final UUID CharacteristicLongitudeUUID = UUID.fromString("00002aaf-0000-1000-8000-00805f9b34fb");
-//    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a08-0000-1000-8000-00805f9b34fb");       //This is the TimeStampUUID for nRF Connection
-    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");         //This is the TimeStampUUID for ESP
+    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a08-0000-1000-8000-00805f9b34fb");       //This is the TimeStampUUID for nRF Connection
+//    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");         //This is the TimeStampUUID for Esp
 
 
     public static final UUID LocationServiceUUID = UUID.fromString("00001819-0000-1000-8000-00805f9b34fb");
