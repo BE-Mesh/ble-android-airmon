@@ -167,6 +167,11 @@ public class MainActivity extends AppCompatActivity {
                 super.onCharacteristicWrite(gatt, characteristic, status);
             }
 
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                writeDebug("I've received a notification by the Characteristic with this UUID: " + characteristic.getUuid().toString());
+                super.onCharacteristicChanged(gatt, characteristic);
+            }
         };
         writeDebug("Location update started");
         mRequestingLocationUpdates = true;
