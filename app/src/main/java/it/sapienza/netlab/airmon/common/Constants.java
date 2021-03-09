@@ -22,6 +22,7 @@ public class Constants {
 //    public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a08-0000-1000-8000-00805f9b34fb");         //This is the TimeStampUUID for nRF Connection
     public static final UUID CharacteristicTimestampUUID = UUID.fromString("00002a2b-0000-1000-8000-00805f9b34fb");         //This is the TimeStampUUID for ESP
 
+    public static final UUID NotificationDescriptor = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
 
     public static final UUID LocationServiceUUID = UUID.fromString("00001819-0000-1000-8000-00805f9b34fb");
     public static final UUID TimeServiceUUID = UUID.fromString("00001805-0000-1000-8000-00805f9b34fb");

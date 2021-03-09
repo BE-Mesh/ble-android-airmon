@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
@@ -169,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-                writeDebug("I've received a notification by the Characteristic with this UUID: " + characteristic.getUuid().toString());
+                writeDebug("ERROR: Memory full (The list is full, sending data failed for 256 attempts)");
                 super.onCharacteristicChanged(gatt, characteristic);
             }
         };
@@ -226,6 +227,9 @@ public class MainActivity extends AppCompatActivity {
             }
 
             BluetoothGattCharacteristic locationChar = locationService.getCharacteristic(Constants.CharacteristicLocationUUID);
+            BluetoothGattDescriptor desc = locationChar.getDescriptor(Constants.NotificationDescriptor);
+            desc.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+            mGatt.writeDescriptor(desc);
             mGatt.setCharacteristicNotification(locationChar, true);
 
             writeDebug("Getting Time service");
