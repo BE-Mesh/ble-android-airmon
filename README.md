@@ -41,7 +41,7 @@ These instructions will get you a copy of the project up and running on your dev
 - If the connection is successful, the services (with the selected UUIDs) will be shown and we connect;
 - Pressing the "Send Message" button we will write on the three characteristics (Latitude, Longitude and Time).
 
-N.B. If the search is restarted the `onStateChange` will change from` Connected` to `Disconnected`. 
+N.B. If the search is restarted the `onStateChange` will change from `Connected` to `Disconnected`. 
 
 ## Presentation
 You can find the presentation of the project [here](https://github.com/BE-Mesh/ble_esp_airmon/blob/main/Presentation/PresentationProjectBLE.ppt)
